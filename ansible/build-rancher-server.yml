@@ -1,0 +1,22 @@
+- hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+  - name: Ensure python2 is installed
+    raw: sudo bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qy python-minimal)"
+    changed_when: True
+
+  - name: Gather facts
+    setup:
+
+  - name: Gather ec2 facts
+    ec2_facts:
+
+  vars:
+    rancher_secrets: "{{ lookup('file', '../secrets/secrets.json') | from_json }}"
+
+  roles:
+    - { role: common/base-server, tags: ['base-server'] }
+    - { role: docker, tags: ['docker-host'] }
+    - { role: common/rancher-server, tags: ['rancher-server'] }

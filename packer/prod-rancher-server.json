@@ -1,0 +1,38 @@
+{
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-east-1",
+      "ami_regions": ["us-east-1"],
+      "source_ami_filter": {
+          "filters": {
+            "name": "*ssd/ubuntu-xenial-16.04-amd64-server*",
+            "architecture": "x86_64",
+            "virtualization-type": "hvm",
+            "root-device-type": "ebs"
+          },
+          "owners": ["099720109477"],
+          "most_recent": true
+      },
+      "ami_virtualization_type": "hvm",
+      "force_deregister": true,
+      "instance_type": "c3.large",
+      "ssh_username": "ubuntu",
+      "vpc_id": "{{user `vpc-id`}}",
+      "subnet_id": "{{user `subnet-id`}}",
+      "ami_name": "prod-rancher-server_{{timestamp}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "playbook_file": "../ansible/build-rancher-server.yml",
+      "groups": ["prod","rancher-servers"],
+      "user": "ubuntu",
+      "extra_arguments": [ 
+        "--extra-vars",
+        "packer=true"
+      ]
+    }
+  ]
+}

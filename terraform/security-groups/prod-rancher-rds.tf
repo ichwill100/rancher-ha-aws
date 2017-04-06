@@ -11,12 +11,17 @@ resource "aws_security_group" "prod-rds" {
     }
 }
 
+output "prod-rds-sg" {
+    value = "${aws_security_group.prod-rds.id}"
+}
+
+
 resource "aws_security_group_rule" "vpn--prod-rds_mysql" {
   type            = "ingress"
   from_port       = 3306
   to_port         = 3306
   protocol        = "tcp"
-  cidr_blocks     = ["${var.vpn-cidr}"]
+  cidr_blocks     = ["${var.secrets["vpn_cidr"] }"]
   security_group_id = "${aws_security_group.prod-rds.id}"
 }
 

@@ -43,8 +43,13 @@ resource "aws_route_table_association" "rancher-dev-rds-b" {
   route_table_id = "${aws_route_table.rancher.id}"
 }
 
-resource "aws_route_table_association" "rancher-prod" {
-  subnet_id      = "${aws_subnet.rancher-prod.id}"
+resource "aws_route_table_association" "rancher-prod-1" {
+  subnet_id      = "${aws_subnet.rancher-prod-1.id}"
+  route_table_id = "${aws_route_table.rancher.id}"
+}
+
+resource "aws_route_table_association" "rancher-prod-2" {
+  subnet_id      = "${aws_subnet.rancher-prod-2.id}"
   route_table_id = "${aws_route_table.rancher.id}"
 }
 

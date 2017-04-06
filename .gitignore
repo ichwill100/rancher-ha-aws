@@ -1,2 +1,7 @@
 # Compiled files
 secrets.tf
+
+ansible/roles/
+secrets/*
+!secrets/example-secrets.json
+.vscode
