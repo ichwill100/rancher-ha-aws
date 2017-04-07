@@ -12,7 +12,8 @@ This repo contains code for deploying a highly available Rancher cluster on AWS.
 4. Build AMI - `cd packer && packer build rancher-server.json`
 5. (OPTIONAL) create a github Oauth Application to use for signin
 6. `mv secrets/example-secrets.json secrets/secrets.json` and populate it with your values
-7. `terraform apply` the following:
+7. Consider the sizing of the instances in the server ASG and the RDS instance - they will vary depending on your needs
+8. `terraform apply` the following:
 
 - terraform/vpc
 - terraform/security-groups
