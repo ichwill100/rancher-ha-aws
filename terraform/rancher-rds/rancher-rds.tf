@@ -4,7 +4,7 @@ resource "aws_db_instance" "prod-rancher-mysql" {
     storage_type           = "gp2"
     engine                 = "mysql"
     engine_version         = "5.7.11"
-    instance_class         = "db.t2.micro"
+    instance_class         = "db.m3.medium"
     name                   = "prodrancher"
     username               = "${var.secrets["rancher_rds_user"] }"
     password               = "${var.secrets["rancher_rds_pass"] }"
