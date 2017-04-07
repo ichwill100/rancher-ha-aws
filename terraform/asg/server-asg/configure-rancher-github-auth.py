@@ -135,7 +135,7 @@ def wait_on_rancher(rancher_url):
             return True
         else:
             logger.info("Unsuccessful ping, retrying")
-            time.sleep(2)
+            time.sleep(10)
             i += 1
     else:
         logger.error("Unable to contact Rancher")
