@@ -16,7 +16,7 @@ resource "aws_db_instance" "prod-rancher-mysql" {
     ]
     db_subnet_group_name   = "${data.terraform_remote_state.vpc.prod-rds-snetgroup}"
     parameter_group_name   = "default.mysql5.7"
-    multi_az               = false
+    multi_az               = true
     skip_final_snapshot    = true
     tags {
         Environment        = "production"
