@@ -1,4 +1,8 @@
 {
+  "variables": {
+    "vpc_id": "",
+    "subnet_id": ""
+  },
   "builders": [
     {
       "type": "amazon-ebs",
@@ -18,9 +22,9 @@
       "force_deregister": true,
       "instance_type": "c3.large",
       "ssh_username": "ubuntu",
-      "vpc_id": "{{user `vpc-id`}}",
-      "subnet_id": "{{user `subnet-id`}}",
-      "ami_name": "prod-rancher-server_{{timestamp}}"
+      "vpc_id": "{{user `vpc_id`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "ami_name": "rancher-server_{{timestamp}}"
     }
   ],
   "provisioners": [

@@ -6,8 +6,8 @@ resource "aws_db_instance" "prod-rancher-mysql" {
     engine_version         = "5.7.11"
     instance_class         = "db.t2.micro"
     name                   = "prodrancher"
-    username               = "${var.secrets["prod_rancher_rds_user"] }"
-    password               = "${var.secrets["prod_rancher_rds_pass"] }"
+    username               = "${var.secrets["rancher_rds_user"] }"
+    password               = "${var.secrets["rancher_rds_pass"] }"
     port                   = 3306
     publicly_accessible    = true
     availability_zone      = "${data.aws_availability_zones.available.names[1]}"
@@ -28,7 +28,7 @@ resource "aws_db_instance" "prod-rancher-mysql" {
 
 resource "aws_route53_record" "rds" {
     zone_id = "${data.terraform_remote_state.r53-zone.tastycidr-r53-zoneid}"
-    name    = "${var.secrets["prod_rancher_rds_url"] }.${var.secrets["prod_rancher_cname_domain"] }"
+    name    = "${var.secrets["rancher_rds_url"] }.${var.secrets["rancher_cname_domain"] }"
     type    = "CNAME"
     ttl     = "300"
     records = ["${aws_db_instance.prod-rancher-mysql.address}"]

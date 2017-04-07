@@ -16,8 +16,18 @@ Options:
     -h --help                display this help text
 """
 
-import requests, json, sys, time, backoff, traceback
+import requests, json, sys, time, backoff, traceback, logging
 from docopt import docopt
+
+logger = logging.getLogger('crga')
+hdlr = logging.FileHandler('crga.log')
+stdouthdlr = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+stdouthdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.addHandler(stdouthdlr)
+logger.setLevel(logging.INFO)
 
 def ping_rancher(rancher_url):
     try:
@@ -27,11 +37,9 @@ def ping_rancher(rancher_url):
         )
         if resp and resp.status_code == 200:
             return True
-    except:
-        print '-'*60
-        print "Exception while pinging Rancher\n"
-        traceback.print_exc()
-        print '-'*60
+    except requests.exceptions.RequestException as e:
+        logger.error("Error pinging Rancher: ", e)
+        sys.exit(1)
         
 
 def check_if_auth_enabled(rancher_url):
@@ -40,16 +48,21 @@ def check_if_auth_enabled(rancher_url):
             "{}/v1/token".format(rancher_url),
             timeout=30
         ).json()
+    except requests.exceptions.RequestException as e:
+        logger.error("Error checking if Rancher auth is enabled: ", e)
+        sys.exit(1)
+
+    try:
         if resp['data'][0]['enabled']:
-            print "Access Control is enabled and using type: {}".format(
+            logger.info("Access Control is enabled and using type: {}".format(
                 resp['data'][0]['authProvider']
-            )
+            ))
             sys.exit(1)
         return False
-    except:
-        print "Exception while checking if Auth is enabled\n"
-        traceback.print_exc()
-        raise
+    except KeyError as e:
+        logger.error("Error checking if Rancher auth is enabled: ", e)
+        sys.exit(1)
+
 
 def auth_payload(orgid, clientid, clientsecret):
     payload_dict = {
@@ -72,16 +85,14 @@ def auth_payload(orgid, clientid, clientsecret):
 
 def get_github_user_id(username):
     try:
-        id = requests.get(
+        return requests.get(
             "https://api.github.com/users/{}".format(
                 username
             )
         ).json()['id']
-        return id
-    except:
-        print "Exception while checking ID of github user\n"
-        traceback.print_exc()
-        raise
+    except requests.exceptions.RequestException as e:
+        logger.error("Error getting ID of github user: ", e)
+        sys.exit(1)
 
 def admin_payload(adminid):
     payload_dict = {
@@ -100,10 +111,9 @@ def set_account_as_admin(rancher_url, api_path, headers, adminid):
             payload,
             headers
         )
-    except:
-        print "Exception while setting Account as admin\n"
-        traceback.print_exc()
-        raise
+    except requests.exceptions.RequestException as e:
+        logger.error("Error setting an account up as an Admin: ", e)
+        sys.exit(1)
     
 
 def post_request_to_rancher(rancher_url, api_path, payload, headers):
@@ -114,10 +124,9 @@ def post_request_to_rancher(rancher_url, api_path, payload, headers):
             headers = headers,
             timeout=30
         )
-    except:
-        print "Exception while posting request to rancher\n"
-        traceback.print_exc()
-        raise
+    except requests.exceptions.RequestException as e:
+        logger.error("Error posting a request to Rancher: ", e)
+        sys.exit(1)
 
 def wait_on_rancher(rancher_url):
     i = 0
@@ -125,12 +134,12 @@ def wait_on_rancher(rancher_url):
         if ping_rancher(rancher_url):
             return True
         else:
-            print "Unsuccessful ping, retrying"
+            logger.info("Unsuccessful ping, retrying")
             time.sleep(2)
             i += 1
     else:
-        print "Unable to contact Rancher"
-        raise Exception
+        logger.error("Unable to contact Rancher")
+        sys.exit(1)
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
@@ -145,33 +154,28 @@ if __name__ == '__main__':
         'accept':"application/json"
     }
 
-    try:
-        if wait_on_rancher(rancherurl):
-            if check_if_auth_enabled(rancherurl) == False:
-                for a in adminlist.split(','):
-                    github_id = get_github_user_id(a)
-                    admin = set_account_as_admin(
-                        rancherurl,
-                        "/v1/accounts",
-                        headers,
-                        github_id
-                    )
-
-                enable_auth = post_request_to_rancher(
+    if wait_on_rancher(rancherurl):
+        if check_if_auth_enabled(rancherurl) == False:
+            for a in adminlist.split(','):
+                github_id = get_github_user_id(a)
+                admin = set_account_as_admin(
                     rancherurl,
-                    "/v1-auth/config",
-                    auth_payload(
-                        github_orgid,
-                        github_clientid,
-                        github_clientsecret
-                    ),
-                    headers
+                    "/v1/accounts",
+                    headers,
+                    github_id
                 )
-                print "Authentication successfully enabled"
-    except:
-        print '-'*60
-        print "Exception: \n"
-        traceback.print_exc()
-        print '-'*60
+
+            enable_auth = post_request_to_rancher(
+                rancherurl,
+                "/v1-auth/config",
+                auth_payload(
+                    github_orgid,
+                    github_clientid,
+                    github_clientsecret
+                ),
+                headers
+            )
+            logger.info("Authentication successfully enabled")
+
 
 

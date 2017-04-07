@@ -3,7 +3,7 @@ data "aws_ami" "prod-rancher-server-ami" {
 
   filter {
     name   = "name"
-    values = ["prod-rancher-server_*"]
+    values = ["rancher-server_*"]
   }
 
   filter {
@@ -37,7 +37,7 @@ resource "aws_autoscaling_group" "prod-rancher-control" {
   availability_zones   = [
     "${data.aws_availability_zones.available.names[1]}",
     "${data.aws_availability_zones.available.names[2]}"
-    ]
+  ]
   name                 = "prod-rancher-control"
   max_size             = 3
   min_size             = 3

@@ -1,5 +1,5 @@
 data "aws_acm_certificate" "prod-rancher-elb" {
-  domain = "${var.secrets["prod_rancher_elb_url"] }"
+  domain = "${var.secrets["rancher_elb_url"] }"
   statuses = ["ISSUED"]
 }
 
@@ -42,7 +42,7 @@ resource "aws_elb" "prod-rancher" {
 
 resource "aws_route53_record" "prod-rancher-elb" {
     zone_id = "${data.terraform_remote_state.r53-zone.tastycidr-r53-zoneid}"
-    name    = "${var.secrets["prod_rancher_elb_url"] }"
+    name    = "${var.secrets["rancher_elb_url"] }"
     type    = "CNAME"
     ttl     = "300"
     records = ["${aws_elb.prod-rancher.dns_name}"]
