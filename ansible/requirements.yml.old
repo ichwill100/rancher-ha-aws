@@ -1,0 +1,12 @@
+---
+# pull down common roles
+
+- src: git@github.com:crielly/ansible-roles.git
+  name: common
+  version: master
+  scm: git
+
+- src: git@github.com:angstwad/docker.ubuntu.git
+  name: docker
+  version: master
+  scm: git
